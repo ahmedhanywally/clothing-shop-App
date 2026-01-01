@@ -1,0 +1,80 @@
+Project Architecture & Code Explanation
+This document explains how the DevOps Clothing App works, detailing the code structure and how the Frontend, Backend, and Database interact.
+
+1. High-Level Architecture
+The application follows a standard 3-Tier Architecture:
+
+Presentation Layer (Frontend): React application running in the browser.
+Logic Layer (Backend): Node.js/Express server handling API requests.
+Data Layer (Database): MongoDB storing the clothing items.
+Docker is used to containerize each of these layers so they can run anywhere without installing Node or Mongo locally.
+
+⚠️ Failed to render Mermaid diagram: Parse error on line 2
+graph TD
+    User[User Browser] -- HTTP Request --> Frontend[Frontend Container (React/Nginx)]
+    Frontend -- Fetch API (Port 5000) --> Backend[Backend Container (Node/Express)]
+    Backend -- Mongoose (Port 27017) --> DB[(MongoDB Container)]
+2. Code Files Explained
+Backend (/backend)
+server.js This is the heart of the backend.
+
+MongoDB Connection: Connects to the MongoDB container (mongodb://mongo:27017/clothing-app).
+Product Schema: Defines the data structure (name, price, image, description).
+Seeding Logic: On startup, if the DB is empty, it inserts 9 items with high-quality Unsplash images.
+API Endpoints:
+GET /api/products: Returns all products (for the home page).
+GET /api/products/:id: Returns a single product by ID (for the details page).
+Dockerfile
+
+Uses node:22-alpine (latest LTS Node.js).
+Installs dependencies and runs node server.js.
+Frontend (/frontend)
+src/App.jsx
+
+Router Setup: Uses react-router-dom to handle navigation.
+Routes:
+/: Renders <ProductList /> (Home).
+/product/:id: Renders <ProductDetails /> (Details Page).
+src/ProductList.jsx
+
+Fetches all products from GET /api/products.
+Displays them in a responsive grid.
+Wraps each card in a <Link> tag so clicking it navigates to the details page.
+src/ProductDetails.jsx
+
+Uses useParams() to get the product ID from the URL.
+Fetches specific details from GET /api/products/:id.
+Displays the large image, description, and an interactive "Add to Cart" button.
+src/index.css
+
+Contains the styling rules (Glassmorphism, Dark Mode).
+Includes animations for page transitions.
+Dockerfile
+
+Stage 1 (Build): Compiles React code using Node 22.
+Stage 2 (Serve): Serves the static files using Nginx.
+DevOps (root)
+docker-compose.yml Orchestrates the 3 services:
+
+mongo: Database with persistent volume.
+backend: Node API, depends on Mongo.
+frontend: React UI, depends on Backend.
+3. How It Works Together (The User Flow)
+Home Page:
+
+User visits http://localhost.
+App.jsx loads ProductList.
+ProductList fetches all items from Backend -> MongoDB.
+User sees the grid of 9 items.
+Navigation:
+
+User clicks an item.
+React Router changes URL to /product/123... without reloading the page (Single Page App).
+App.jsx switches view to ProductDetails.
+Details Page:
+
+ProductDetails grabs the ID 123... from the URL.
+It asks Backend for "Product 123".
+Backend asks MongoDB for "Product 123".
+Data returns and is displayed with a large image.
+User clicks "Add to Cart" -> JavaScript alert confirms action.
