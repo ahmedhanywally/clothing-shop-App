@@ -2,33 +2,68 @@ pipeline {
     agent any
 
     environment {
-        GITHUB_CRED  = credentials('github-token')    // GitHub PAT stored in Jenkins
-        DOCKERHUB    = credentials('dockerhub-creds') // Docker Hub username/password stored in Jenkins
-        TEST_REPO    = 'https://github.com/ahmedhanywally/clothing-shop-App.git'
-        DOCKER_IMAGE = 'hani111/clothing-shop-app'
+        DOCKERHUB = credentials('dockerhub-creds') // Docker Hub username/password
+        GITHUB_REPO = 'https://github.com/ahmedhanywally/clothing-shop-App.git'
+        BUILD_NUMBER_TAG = "${BUILD_NUMBER}"
+        FRONTEND_IMAGE = "hani111/frontend-app"
+        BACKEND_IMAGE  = "hani111/backend-app"
     }
 
     stages {
 
-        stage('Test GitHub Login') {
+        stage('Checkout Code') {
             steps {
-                script {
-                    echo "Testing GitHub authentication..."
-                    // Use HTTPS with credentials
-                    bat "git ls-remote %TEST_REPO%"
-                }
+                echo "Checking out repo..."
+                git url: "${GITHUB_REPO}", branch: 'main', credentialsId: 'github-token'
             }
         }
 
-        stage('Test Docker Hub Login') {
+        stage('Docker Hub Login') {
             steps {
-                script {
-                    echo "Testing Docker Hub authentication..."
-                    // Login using username/password
-                    bat """
-                    echo %DOCKERHUB_PSW% | docker login -u %DOCKERHUB_USR% --password-stdin
-                    """
-                }
+                echo "Logging in to Docker Hub..."
+                bat """
+                echo %DOCKERHUB_PSW% | docker login -u %DOCKERHUB_USR% --password-stdin
+                """
+            }
+        }
+
+        stage('Build Frontend Image') {
+            steps {
+                echo "Building frontend Docker image..."
+                bat """
+                docker build -t %FRONTEND_IMAGE%:%BUILD_NUMBER_TAG% ./frontend
+                docker tag %FRONTEND_IMAGE%:%BUILD_NUMBER_TAG% %FRONTEND_IMAGE%:latest
+                """
+            }
+        }
+
+        stage('Build Backend Image') {
+            steps {
+                echo "Building backend Docker image..."
+                bat """
+                docker build -t %BACKEND_IMAGE%:%BUILD_NUMBER_TAG% ./backend
+                docker tag %BACKEND_IMAGE%:%BUILD_NUMBER_TAG% %BACKEND_IMAGE%:latest
+                """
+            }
+        }
+
+        stage('Push Frontend Image') {
+            steps {
+                echo "Pushing frontend Docker image to Docker Hub..."
+                bat """
+                docker push %FRONTEND_IMAGE%:%BUILD_NUMBER_TAG%
+                docker push %FRONTEND_IMAGE%:latest
+                """
+            }
+        }
+
+        stage('Push Backend Image') {
+            steps {
+                echo "Pushing backend Docker image to Docker Hub..."
+                bat """
+                docker push %BACKEND_IMAGE%:%BUILD_NUMBER_TAG%
+                docker push %BACKEND_IMAGE%:latest
+                """
             }
         }
     }
