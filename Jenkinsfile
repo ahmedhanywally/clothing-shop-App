@@ -4,9 +4,8 @@ pipeline {
     environment {
         DOCKERHUB = credentials('dockerhub-creds') // Docker Hub username/password
         GITHUB_REPO = 'https://github.com/ahmedhanywally/clothing-shop-App.git'
-        BUILD_NUMBER_TAG = "${BUILD_NUMBER}"
-        FRONTEND_IMAGE = "hani111/frontend-app"
-        BACKEND_IMAGE  = "hani111/backend-app"
+        FRONTEND_IMAGE = "hani111/clothing shop frontend-app"
+        BACKEND_IMAGE  = "hani111/clothing shop backend-app"
     }
 
     stages {
@@ -31,8 +30,8 @@ pipeline {
             steps {
                 echo "Building frontend Docker image..."
                 bat """
-                docker build -t %FRONTEND_IMAGE%:%BUILD_NUMBER_TAG% ./frontend
-                docker tag %FRONTEND_IMAGE%:%BUILD_NUMBER_TAG% %FRONTEND_IMAGE%:latest
+                docker build -t %FRONTEND_IMAGE%:%BUILD_NUMBER% ./frontend
+                docker tag %FRONTEND_IMAGE%:%BUILD_NUMBER% %FRONTEND_IMAGE%:latest
                 """
             }
         }
@@ -41,8 +40,8 @@ pipeline {
             steps {
                 echo "Building backend Docker image..."
                 bat """
-                docker build -t %BACKEND_IMAGE%:%BUILD_NUMBER_TAG% ./backend
-                docker tag %BACKEND_IMAGE%:%BUILD_NUMBER_TAG% %BACKEND_IMAGE%:latest
+                docker build -t %BACKEND_IMAGE%:%BUILD_NUMBER% ./backend
+                docker tag %BACKEND_IMAGE%:%BUILD_NUMBER% %BACKEND_IMAGE%:latest
                 """
             }
         }
@@ -51,7 +50,7 @@ pipeline {
             steps {
                 echo "Pushing frontend Docker image to Docker Hub..."
                 bat """
-                docker push %FRONTEND_IMAGE%:%BUILD_NUMBER_TAG%
+                docker push %FRONTEND_IMAGE%:%BUILD_NUMBER%
                 docker push %FRONTEND_IMAGE%:latest
                 """
             }
@@ -61,7 +60,7 @@ pipeline {
             steps {
                 echo "Pushing backend Docker image to Docker Hub..."
                 bat """
-                docker push %BACKEND_IMAGE%:%BUILD_NUMBER_TAG%
+                docker push %BACKEND_IMAGE%:%BUILD_NUMBER%
                 docker push %BACKEND_IMAGE%:latest
                 """
             }
