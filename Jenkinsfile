@@ -4,8 +4,8 @@ pipeline {
     environment {
         DOCKERHUB = credentials('dockerhub-creds') // Docker Hub username/password
         GITHUB_REPO = 'https://github.com/ahmedhanywally/clothing-shop-App.git'
-        FRONTEND_IMAGE = "hani111/clothing shop frontend-app"
-        BACKEND_IMAGE  = "hani111/clothing shop backend-app"
+        FRONTEND_IMAGE = "hani111/clothing-frontend-app"
+        BACKEND_IMAGE  = "hani111/clothing-backend-app"
     }
 
     stages {
