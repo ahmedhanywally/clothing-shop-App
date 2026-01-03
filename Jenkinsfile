@@ -2,38 +2,33 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "hani111/clothing-shop-app"
-        DOCKER_TAG   = "${BUILD_NUMBER}"
-        DOCKERHUB    = credentials('dockerhub-creds')
+        GITHUB_CRED  = credentials('github-token')    // GitHub PAT stored in Jenkins
+        DOCKERHUB    = credentials('dockerhub-creds') // Docker Hub username/password stored in Jenkins
+        TEST_REPO    = 'https://github.com/ahmedhanywally/clothing-shop-App.git'
+        DOCKER_IMAGE = 'hani111/clothing-shop-app'
     }
 
     stages {
 
-        stage('Checkout Code') {
+        stage('Test GitHub Login') {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/ahmedhanywally/clothing-shop-App.git',
-                    credentialsId: 'github-token'
+                script {
+                    echo "Testing GitHub authentication..."
+                    // Use HTTPS with credentials
+                    bat "git ls-remote %TEST_REPO%"
+                }
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Test Docker Hub Login') {
             steps {
-                bat "docker build -t %DOCKER_IMAGE%:%DOCKER_TAG% ."
-            }
-        }
-
-        stage('Docker Login') {
-            steps {
-                bat "echo %DOCKERHUB_PSW% | docker login -u %DOCKERHUB_USR% --password-stdin"
-            }
-        }
-
-        stage('Push Image to Docker Hub') {
-            steps {
-                bat "docker push %DOCKER_IMAGE%:%DOCKER_TAG%"
-                bat "docker tag %DOCKER_IMAGE%:%DOCKER_TAG% %DOCKER_IMAGE%:latest"
-                bat "docker push %DOCKER_IMAGE%:latest"
+                script {
+                    echo "Testing Docker Hub authentication..."
+                    // Login using username/password
+                    bat """
+                    echo %DOCKERHUB_PSW% | docker login -u %DOCKERHUB_USR% --password-stdin
+                    """
+                }
             }
         }
     }
