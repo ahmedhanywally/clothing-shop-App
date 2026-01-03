@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "hani111/clothing-shop-App"
+        DOCKER_IMAGE = "hani111/clothing-shop-app"
         DOCKER_TAG   = "${BUILD_NUMBER}"
-        DOCKERHUB    = credentials('dockerhub-creds') // username/password stored in Jenkins
+        DOCKERHUB    = credentials('dockerhub-creds')
     }
 
     stages {
