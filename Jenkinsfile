@@ -11,7 +11,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 git branch: 'main',
-                    url: 'git@github.com:ahmedhanywally/clothing-shop-App.git'
+                    url: 'https://github.com/ahmedhanywally/clothing-shop-App.git'
             }
         }
 
