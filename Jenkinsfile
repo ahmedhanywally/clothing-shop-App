@@ -4,6 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = "hani111/clothing-shop-App"
         DOCKER_TAG   = "${BUILD_NUMBER}"
+        DOCKERHUB    = credentials('dockerhub-creds') // username/password stored in Jenkins
     }
 
     stages {
@@ -11,26 +12,28 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/ahmedhanywally/clothing-shop-App.git'
+                    url: 'https://github.com/ahmedhanywally/clothing-shop-App.git',
+                    credentialsId: 'github-token'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
-                }
+                bat "docker build -t %DOCKER_IMAGE%:%DOCKER_TAG% ."
+            }
+        }
+
+        stage('Docker Login') {
+            steps {
+                bat "echo %DOCKERHUB_PSW% | docker login -u %DOCKERHUB_USR% --password-stdin"
             }
         }
 
         stage('Push Image to Docker Hub') {
             steps {
-                script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-creds') {
-                        docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}").push()
-                        docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}").push("latest")
-                    }
-                }
+                bat "docker push %DOCKER_IMAGE%:%DOCKER_TAG%"
+                bat "docker tag %DOCKER_IMAGE%:%DOCKER_TAG% %DOCKER_IMAGE%:latest"
+                bat "docker push %DOCKER_IMAGE%:latest"
             }
         }
     }
